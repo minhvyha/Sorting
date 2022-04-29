@@ -19,14 +19,16 @@ BLACK_BLUE = (5,5,28)
 RED =  (255, 10 ,10)
 GREEN = (10, 255, 10)
 WHITE = (255, 255, 255)
+L_BLUE = (20, 20, 255)
 
-NUM_BAR = 125
-
-SPACE = (WIDTH - 40) //  NUM_BAR
-
-BAR_WIDTH, BAR_HEIGHT = SPACE - 2, 3.5
-
+NUM_BAR = 165
 BORDER = 25
+
+
+SPACE = (WIDTH - 25 - BORDER) / NUM_BAR
+
+BAR_WIDTH, BAR_HEIGHT = SPACE - 1.3, 2.945
+
 
 FPS = 80
 
@@ -54,6 +56,12 @@ class Bar:
     def done(self):
         self.color = GREEN
 
+    def match(self):
+        self.color = L_BLUE
+
+    def back(self):
+        self.color = LIGHT_BLUE
+
 def main(win):
     clock = pygame.time.Clock()
     sort = [x for x in range(1,NUM_BAR + 2)]
@@ -68,6 +76,7 @@ def main(win):
                FONT_SMALL.render('5. Heap Sort', 1, WHITE),
                FONT_SMALL.render('6. Insertion Sort', 1, WHITE)]
     reset = FONT_SMALL.render('0. Reset', 1, WHITE)
+
     global RUN
     while RUN:
         clock.tick(FPS)
@@ -77,8 +86,15 @@ def main(win):
                 RUN = False
                 break
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_0]:
+            random.shuffle(sort)
+            bar = [Bar((BORDER + i * SPACE), (HEIGHT - DOWN - (BAR_HEIGHT * sort[i])), BAR_WIDTH, BAR_HEIGHT * sort[i],
+                       sort[i]) for i in range(NUM_BAR)]
         if keys[pygame.K_1]:
             selection(bar,win, name, project, sorting, reset)
+        if keys[pygame.K_2]:
+            bubble(bar,win, name, project, sorting, reset)
+
     pygame.quit()
 
 def draw(win, bar, name, project, sorting, reset):
@@ -96,32 +112,55 @@ def draw(win, bar, name, project, sorting, reset):
     pygame.display.update()
 
 def selection(bar,win, name, project, sorting, reset):
-    pygame.init()
     global RUN
-    for i in range(len(bar) - 1):
+    for i in range(len(bar)):
         if not RUN:
             break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 RUN = False
                 break
-        pygame.time.delay(100)
-        draw(win, bar, name, project, sorting, reset)
         min = i
         for u in range(i + 1,len(bar)):
-
+            pygame.time.delay(1)
+            bar[min].match()
+            bar[u].check()
+            draw(win, bar, name, project, sorting, reset)
             if bar[u].y > bar[min].y:
+                bar[min].back()
                 min = u
+            if u != i + 1:
+                bar[u - 1].back()
+        bar[len(bar) - 1].back()
         temp = bar[min]
         x = temp.x
         bar[min].x = bar[i].x
         bar[i].x = x
         bar[min] = bar[i]
         bar[i] = temp
+        bar[i].done()
 
+def bubble(bar, win, name, project, sorting, reset):
+    global RUN
+    for i in range(len(bar)):
+        for j in range(len(bar) - 1 - i):
+            pygame.time.delay(1)
+            if j != 0:
+                bar[j - 1].back()
+            bar[j].check()
+            draw(win, bar, name, project, sorting, reset)
+            if bar[j].value > bar[j + 1].value:
+                temp = bar[j]
+                x = temp.x
+                bar[j].x = bar[j + 1].x
+                bar[j + 1].x = x
+                bar[j] = bar[j + 1]
+                bar[j + 1] = temp
+
+        bar[len(bar) - 1 - i].done()
 def display(bar):
     for i in bar:
-
         print(i.x, i.y)
+
 if __name__ == "__main__":
   main(win)
