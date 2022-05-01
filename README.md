@@ -28,5 +28,4 @@ The solution for this project is coded in python using library pygame. There is 
 4. Quick sort
 5. Heap sort
 6. Insertion sort
-\
-\
+
