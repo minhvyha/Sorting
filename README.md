@@ -29,3 +29,4 @@ The solution for this project is coded in python using library pygame. There is 
 5. Heap sort
 6. Insertion sort
 
+Note: pygame library need to be installed before running this project.
