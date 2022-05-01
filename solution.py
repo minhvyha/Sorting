@@ -1,6 +1,6 @@
 import pygame
 import random
-import copy
+
 pygame.init()
 
 WIDTH, HEIGHT = 800, 700
@@ -21,15 +21,16 @@ RED =  (255, 10 ,10)
 GREEN = (10, 255, 10)
 WHITE = (255, 255, 255)
 L_BLUE = (20, 20, 255)
+ORANGE = (255, 100, 0)
 
-NUM_BAR = 165
+NUM_BAR = 170
 BORDER = 25
 
 SORTED = False
 
 SPACE = (WIDTH - 25 - BORDER) / NUM_BAR
 
-BAR_WIDTH, BAR_HEIGHT = SPACE - 1.3, 2.945
+BAR_WIDTH, BAR_HEIGHT = SPACE - 1.2, 2.87
 
 
 FPS = 80
@@ -39,6 +40,16 @@ RUN = True
 DOWN = 25
 
 COUNT = 0
+
+name = FONT_MEDIUM.render('Minh Vy Ha', 1, WHITE)
+project = FONT_BIG.render('SORTING', 1, WHITE)
+sorting = [FONT_SMALL.render('1. Selection Sort', 1, WHITE),
+           FONT_SMALL.render('2. Bubble Sort', 1, WHITE),
+           FONT_SMALL.render('3. Merge Sort', 1, WHITE),
+           FONT_SMALL.render('4. Quick Sort', 1, WHITE),
+           FONT_SMALL.render('5. Heap Sort', 1, WHITE),
+           FONT_SMALL.render('6. Insertion Sort', 1, WHITE)]
+reset = FONT_SMALL.render('0. Reset', 1, WHITE)
 
 class Bar:
 
@@ -76,59 +87,91 @@ bar = [Bar((BORDER + i * SPACE), (HEIGHT - DOWN - (BAR_HEIGHT * sort[i])), BAR_W
 
 def main(win):
     clock = pygame.time.Clock()
-    name = FONT_MEDIUM.render('Minh Vy Ha', 1, WHITE)
-    project = FONT_BIG.render('SORTING', 1, WHITE)
-    sorting = [FONT_SMALL.render('1. Selection Sort', 1, WHITE),
-               FONT_SMALL.render('2. Bubble Sort', 1, WHITE),
-               FONT_SMALL.render('3. Merge Sort', 1, WHITE),
-               FONT_SMALL.render('4. Quick Sort', 1, WHITE),
-               FONT_SMALL.render('5. Heap Sort', 1, WHITE),
-               FONT_SMALL.render('6. Insertion Sort', 1, WHITE)]
-    reset = FONT_SMALL.render('0. Reset', 1, WHITE)
+
     global RUN
     global bar
-
+    global SORTED
     while RUN:
+
         clock.tick(FPS)
-        draw(win, bar, name, project, sorting, reset)
+        draw(win, bar)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 RUN = False
                 break
+
         keys = pygame.key.get_pressed()
+
         if keys[pygame.K_0]:
             random.shuffle(sort)
             bar = [Bar((BORDER + i * SPACE), (HEIGHT - DOWN - (BAR_HEIGHT * sort[i])), BAR_WIDTH, BAR_HEIGHT * sort[i],
                        sort[i]) for i in range(NUM_BAR)]
+            SORTED = False
         if keys[pygame.K_1]:
-            selection(bar,win, name, project, sorting, reset)
+            check()
+            selection(bar,win)
         if keys[pygame.K_2]:
-            bubble(bar,win, name, project, sorting, reset)
+            check()
+            bubble(bar,win)
         if keys[pygame.K_3]:
-            merge_sort(bar, 0, len(bar) - 1, win, name, project, sorting, reset)
-            display(bar)
+            check()
+            merge_sort(bar, 0, len(bar) - 1, win)
+        if keys[pygame.K_4]:
+            check()
+            quick_sort(bar, 0, len(bar) - 1, win)
+        if keys[pygame.K_5]:
+            check()
+            heap_sort(bar, win)
+        if keys[pygame.K_6]:
+            check()
+            insertion(bar, win)
 
     pygame.quit()
 
-def draw(win, bar, name, project, sorting, reset, right=None):
+def check():
+    global SORTED
+    global bar
+    if SORTED:
+        SORTED = False
+        random.shuffle(sort)
+        bar = [Bar((BORDER + i * SPACE), (HEIGHT - DOWN - (BAR_HEIGHT * sort[i])), BAR_WIDTH, BAR_HEIGHT * sort[i], sort[i]) for i in range(NUM_BAR)]
+
+#draw function for the screen
+def draw(win, bar):
+    # set global variables for all elements before drawing
+    global reset
+    global name
+    global sorting
+    global project
+
     win.fill(BLUE)
+
     pygame.draw.rect(win, DARK_BLUE, (0, 0, 800, 180))
+
     win.blit(project, (30, 20))
+
     win.blit(name, (40, 90))
+
     pygame.draw.rect(win, BLUE,(250, 15, 5, 150))
+
+
     for i in range(len(sorting)):
         win.blit(sorting[i], (270, 13 + (25 * i)))
     win.blit(reset, (460, 13))
+
     for i in bar:
         i.draw(win)
-    if right:
-        for i in right:
-            i.draw(win)
 
     pygame.display.update()
 
-def selection(bar,win, name, project, sorting, reset):
+def selection(bar,win):
+    #Set global variables to control
+    #the quitting function and shuffle function for the list
+    #before running
+    global SORTED
+    SORTED = True
     global RUN
+
     for i in range(len(bar)):
         if not RUN:
             break
@@ -138,14 +181,16 @@ def selection(bar,win, name, project, sorting, reset):
                 break
         min = i
         for u in range(i + 1,len(bar)):
+
             bar[min].match()
             bar[u].check()
-            draw(win, bar, name, project, sorting, reset)
+            draw(win, bar)
+            bar[u].back()
+
             if bar[u].y > bar[min].y:
                 bar[min].back()
                 min = u
-            if u != i + 1:
-                bar[u - 1].back()
+
         bar[len(bar) - 1].back()
         temp = bar[min]
         bar[min] = bar[i]
@@ -153,8 +198,14 @@ def selection(bar,win, name, project, sorting, reset):
         bar[min].reset(min)
         bar[i].reset(i).done()
 
-def bubble(bar, win, name, project, sorting, reset):
+def bubble(bar, win):
+    # Set global variables to control
+    # the quitting function and shuffle function for the list
+    # before running
     global RUN
+    global SORTED
+    SORTED = True
+
     for i in range(len(bar)):
         if not RUN:
             break
@@ -162,11 +213,13 @@ def bubble(bar, win, name, project, sorting, reset):
             if event.type == pygame.QUIT:
                 RUN = False
                 break
+
         for j in range(len(bar) - 1 - i):
-            if j != 0:
-                bar[j - 1].back()
+
             bar[j].check()
-            draw(win, bar, name, project, sorting, reset)
+            draw(win, bar)
+            bar[j].back()
+
             if bar[j].value > bar[j + 1].value:
                 temp = bar[j]
                 bar[j] = bar[j + 1]
@@ -176,7 +229,7 @@ def bubble(bar, win, name, project, sorting, reset):
 
         bar[len(bar) - 1 - i].done()
 
-def merge(bar, left, mid, right, win, name, project, sorting, reset):
+def merge(bar, left, mid, right, win):
     temp = []
     i = left
     j = mid + 1
@@ -184,7 +237,7 @@ def merge(bar, left, mid, right, win, name, project, sorting, reset):
     while i <= mid and j <= right:
         bar[i].check()
         bar[j].check()
-        draw(win, bar, name, project, sorting, reset)
+        draw(win, bar)
         bar[i].back()
         bar[j].back()
         if bar[i].value < bar[j].value:
@@ -195,13 +248,13 @@ def merge(bar, left, mid, right, win, name, project, sorting, reset):
             j += 1
     while i <= mid:
         bar[i].check()
-        draw(win, bar, name, project, sorting, reset)
+        draw(win, bar)
         bar[i].back()
         temp.append(bar[i])
         i += 1
     while j <= right:
         bar[j].check()
-        draw(win, bar, name, project, sorting, reset)
+        draw(win, bar)
         bar[j].back()
         temp.append(bar[j])
         j += 1
@@ -210,29 +263,165 @@ def merge(bar, left, mid, right, win, name, project, sorting, reset):
         bar[i] = temp[k]
         bar[i].reset(i)
         bar[i].check()
-        draw(win, bar, name, project, sorting, reset)
+        draw(win, bar)
         if right - left == len(bar) - 1:
             bar[i].done()
         else:
             bar[i].back()
-
-
-
         k += 1
 
 
-def merge_sort(bar, left, right, win, name, project, sorting, reset):
+def merge_sort(bar, left, right, win):
+    # Set global variables to control
+    # the quitting function and shuffle function for the list
+    # before running
+    global SORTED
+    SORTED = True
+    global RUN
+
     mid = left + (right - left) // 2
     if left < right:
-        merge_sort(bar, left, mid, win, name, project, sorting, reset)
-        merge_sort(bar, mid + 1, right, win, name, project, sorting, reset)
-        merge(bar, left, mid, right, win, name, project, sorting, reset)
+        merge_sort(bar, left, mid, win)
+        merge_sort(bar, mid + 1, right, win)
+        if not RUN:
+            return
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                RUN = False
+                break
+        merge(bar, left, mid, right, win)
+
+def quick_sort(bar, low, high, win):
+    # Set global variables to control
+    # the quitting function and shuffle function for the list
+    # before running
+    global RUN
+    global SORTED
+    SORTED = True
+
+    if len(bar) == 1:
+        return bar
+    if low < high:
+
+        pi = partition(bar, low, high, win)
+
+        draw(win, bar)
+
+        quick_sort(bar, low, pi - 1, win)
+
+        if not RUN:
+            return
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                RUN = False
+                break
+
+        for i in range(pi + 1):
+            bar[i].done()
+
+        quick_sort(bar, pi, high, win)
+
+def partition(bar, low, high, win):
+    i = low
+    pivot = bar[high]
+    pivot.color = ORANGE
+    for j in range(low, high):
+
+        bar[j].check()
+        bar[i].check()
+        draw(win, bar)
+        bar[j].back()
+        bar[i].back()
+        if bar[j].value < pivot.value:
 
 
+            bar[i], bar[j] = bar[j], bar[i]
+            bar[i].reset(i)
+            bar[j].reset(j)
+            i += 1
 
-def display(bar):
-    for i in bar:
-        print(i.x, i.y)
+    bar[i], bar[high] = bar[high], bar[i]
+    bar[i].reset(i)
+    pivot.back()
+    draw(win, bar)
+    bar[high].reset(high)
+    return i
+
+def insertion(bar, win):
+    # Set global variables to control
+    # the quitting function and shuffle function for the list
+    # before running
+    global RUN
+    global SORTED
+    SORTED = True
+
+    for i in range(1, len(bar)):
+        bar[i].check()
+        draw(win, bar)
+        bar[i].back()
+        j = i
+        while j > 0 and bar[j].value < bar[j - 1].value:
+            if not RUN:
+                return
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    RUN = False
+                    break
+            bar[i].check()
+            draw(win, bar)
+            bar[i].back()
+            bar[j], bar[j - 1] = bar[j - 1], bar[j]
+            bar[j].reset(j)
+            bar[j - 1].reset(j - 1)
+            j -= 1
+    for i in range(len(bar)):
+        bar[i].done()
+        pygame.time.delay(1)
+        draw(win, bar)
+
+def heap_sort(bar, win):
+    # Set global variables to control
+    # the quitting function and shuffle function for the list
+    # before running
+    global RUN
+    global SORTED
+    SORTED = True
+    n = len(bar)
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(bar, n, i, win)
+
+    for i in range(n - 1, 0, -1):
+        bar[i], bar[0] = bar[0], bar[i]
+        bar[i].reset(i)
+        bar[0].reset(0)
+        bar[i].done()
+        draw(win, bar)
+        heapify(bar, i, 0, win)
+
+def heapify(bar, n, i, win):
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+    if left < n and bar[left].value > bar[largest].value:
+        largest = left
+    if right < n and bar[right].value > bar[largest].value:
+        largest = right
+    if largest != i:
+        bar[i].check()
+        bar[largest].check()
+        draw(win, bar)
+
+        bar[i], bar[largest] = bar[largest], bar[i]
+
+        bar[i].reset(i)
+        bar[largest].reset(largest)
+
+        bar[i].back()
+        bar[largest].back()
+        draw(win, bar)
+
+        heapify(bar, n, largest, win)
+
 
 if __name__ == "__main__":
   main(win)
