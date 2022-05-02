@@ -12,10 +12,11 @@
 
 ### Concepts in the project:
 
-- Data strucutre (list, tuple)
+- Data strucutre (list, tuple, Binary Heap)
 - Object-Oriented Programming (OOP)
 - Conditional statements
 - Function from pygame library
+- **Recursion**
 
 ### About this project
 We all use sorting algorithms to sort and make list, array in some sort of order and I visualised these process in my project. Sorting visualisation is my personal project that visualised six different sorting algorithms such as selection, bubble, merge or quick sort - I did the project in Python with pygame library. 
